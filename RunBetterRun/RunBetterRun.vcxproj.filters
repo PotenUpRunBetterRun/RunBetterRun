@@ -162,6 +162,12 @@
     <ClCompile Include="MapEditorUI.cpp">
       <Filter>Core\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="MinimapUI.cpp">
+      <Filter>InGame\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>InGame\Sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h">
