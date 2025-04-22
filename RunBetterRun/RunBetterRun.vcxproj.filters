@@ -40,6 +40,10 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+<<<<<<<<< Temporary merge branch 1
+    <Filter Include="InGame\Sound">
+      <UniqueIdentifier>{ed3c2596-8596-4123-bac8-909238e5509d}</UniqueIdentifier>
+=========
     <Filter Include="Core\Data">
       <UniqueIdentifier>{5bf577db-5bda-4690-9566-8318306cafa6}</UniqueIdentifier>
     </Filter>
@@ -291,7 +295,16 @@
       <Filter>Core\Editor</Filter>
     </ClInclude>
     <ClInclude Include="MapEditorUI.h">
-      <Filter>Core\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>Core\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MinimapUI.h">
+      <Filter>InGame\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>InGame\Sound</Filter>
+>>>>>>>>> Temporary merge branch 2
     </ClInclude>
   </ItemGroup>
 </Project>

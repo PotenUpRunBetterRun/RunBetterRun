@@ -10,10 +10,16 @@
 #include "GameStartScene.h"
 #include "LossLifeScene.h"
 #include "SoundManager.h"
+=========
+#include "SoundManager.h"
+=========
+#include "SoundManager.h"
+=========
 #include "DeadScene.h"
 #include "VideoManager.h"
 #include "DataManager.h"
 #include "MapEditor.h"
+>>>>>>>>> Temporary merge branch 2
 
 HRESULT MainGame::Init()
 {
@@ -73,12 +79,13 @@ void MainGame::Release()
 
 	ReleaseDC(g_hWnd, hdc);
 	MapManager::GetInstance()->Release();
-	SpriteManager::GetInstance()->Release();
-	DataManager::GetInstance()->Release();
+	MapManager::GetInstance()->Release();
 	SceneManager::GetInstance()->Release();
 	KeyManager::GetInstance()->Release();
 	VideoManager::Release();
 	ImageManager::GetInstance()->Release();
+<<<<<<<<< Temporary merge branch 1
+	MapManager::GetInstance()->Release();
 	SoundManager::GetInstance()->Release();
 }
 
