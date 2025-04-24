@@ -21,7 +21,7 @@ HRESULT MainGameScene::Init()
 		return E_FAIL;
 	}
 
-	MapManager::GetInstance()->Init(L"Map/EditorMap.dat");
+	MapManager::GetInstance()->Init(L"Map/SavedMap.dat");
 	SpriteManager::GetInstance()->Init();
 	Player::GetInstance()->Init([&](float shakePower, float time, bool isStepShake) { ShakeScreen(shakePower, time, isStepShake); });
 	MonsterManager::GetInstance()->Init();
