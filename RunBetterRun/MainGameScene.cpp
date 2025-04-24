@@ -376,14 +376,15 @@ void MainGameScene::HandleButtonClick(PauseButton & button)
 	switch(button.type)
 	{
 	case PauseButtonType::STARTSCREEN:
-		SceneManager::GetInstance()->ChangeScene("GameStartScene");
+	    status = MainGameScene::SceneStatus::IN_GAME;
+		button.state = PauseButtonState::NORMAL;
 		break;
 
 	case PauseButtonType::MAP_EDITOR:
 		SceneManager::GetInstance()->ChangeScene("MapEditorScene");
 		break;
 	case PauseButtonType::EXIT:
-		DestroyWindow(g_hWnd);
+	    SceneManager::GetInstance()->ChangeScene("GameStartScene");
 		break;
 	}
 }
