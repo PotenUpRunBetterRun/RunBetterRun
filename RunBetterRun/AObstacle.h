@@ -1,7 +1,7 @@
 #pragma once
 #include "structs.h"
 
-#define OBSTACLE_SIZE 0.3f
+#define OBSTACLE_SIZE 1.2f
 
 class AObstacle
 {
@@ -16,5 +16,8 @@ public:
 	virtual void Update(void);
 
 	void Distance(FPOINT player);
+	POINT GetPosition(void) {
+		return obstacle.pos;
+	}
 };
 
