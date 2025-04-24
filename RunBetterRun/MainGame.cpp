@@ -12,6 +12,7 @@
 #include "JumpscareScene.h"
 #include "LossLifeScene.h"
 #include "DeadScene.h"
+#include "EndingScene.h"
 #include "VideoManager.h"
 #include "DataManager.h"
 #include "MapEditor.h"
@@ -44,6 +45,7 @@ HRESULT MainGame::Init()
 	SceneManager::GetInstance()->AddScene("LossLifeScene",new LossLifeScene());
 	SceneManager::GetInstance()->AddScene("JumpscareScene",new JumpscareScene());
 	SceneManager::GetInstance()->AddScene("DeadScene",new DeadScene());
+	SceneManager::GetInstance()->AddScene("EndingScene",new EndingScene());
 	SceneManager::GetInstance()->AddLoadingScene("LoadingScene",new LoadingScene());
 	SceneManager::GetInstance()->ChangeScene("GameStartScene");
 
