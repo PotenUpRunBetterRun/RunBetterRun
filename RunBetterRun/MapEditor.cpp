@@ -26,7 +26,8 @@ MapEditor::MapEditor():
 	useCenter(false),
 	isDraggingArea(false),
 	enableDragMode(false),
-	isRightDraggingArea(false)
+	isRightDraggingArea(false),
+	selectedSpriteID(0)
 {}
 
 MapEditor::~MapEditor()
@@ -68,11 +69,18 @@ HRESULT MapEditor::Init()
 		true,RGB(255,0,255));
 
 	sampleSpriteImage = ImageManager::GetInstance()->AddImage(
-						"EditorSpriteSheet",L"Image/horrorMapTiles2.bmp",
-						11 * TILE_SIZE,11 * TILE_SIZE,11,11,true,RGB(255,0,255)
-	);
+						"EditorSpriteSheet",L"Image/pallet64x160.bmp",
+						5 * TILE_SIZE,2 * TILE_SIZE,5,2,true,RGB(255,0,255));
 
-	if(!sampleTileImage || !sampleSpriteImage)
+	keySpriteImage = ImageManager::GetInstance()->AddImage(
+						"EditorKeySprite",L"Image/soul.bmp",
+						250,250,20,1,true,RGB(255,0,255));
+
+	monsterSpriteImage = ImageManager::GetInstance()->AddImage(
+						"EditorMonsterSprite",L"Image/Ballman.bmp",
+						215,246,10,36,true,RGB(255,0,255));
+
+	if(!sampleTileImage || !sampleSpriteImage || !keySpriteImage || !monsterSpriteImage)
 	{
 		return E_FAIL;
 	}
@@ -405,205 +413,78 @@ void MapEditor::RenderSampleSprites(HDC hdc)
 {
 	if(!sampleSpriteImage) return;
 
-	// 샘플 영역 배경 및 테두리
+	// 샘플 영역 배경 및 테두리 그리기
 	HBRUSH sampleBgBrush = CreateSolidBrush(RGB(240,240,240));
-	HBRUSH oldBrush = (HBRUSH)SelectObject(hdc,sampleBgBrush);
 	HPEN samplePen = CreatePen(PS_SOLID,2,RGB(150,50,50));
+	HBRUSH oldBrush = (HBRUSH)SelectObject(hdc,sampleBgBrush);
 	HPEN oldPen = (HPEN)SelectObject(hdc,samplePen);
 
-	// 샘플 영역 크기 계산 (더 많은 요소를 표시하기 위해)
-	int totalHeight = sampleSpriteArea.bottom - sampleSpriteArea.top;
-	int newBottom = sampleSpriteArea.top + totalHeight + 400; // 더 많은 공간 확보
-
-	// 샘플 영역 배경
 	Rectangle(hdc,sampleSpriteArea.left-5,sampleSpriteArea.top-25,
-			  sampleSpriteArea.right+5,newBottom);
+			  sampleSpriteArea.right+5,sampleSpriteArea.bottom+5);
 
-	// 샘플 영역 제목
+	// 제목 표시
 	SetBkMode(hdc,TRANSPARENT);
 	SetTextColor(hdc,RGB(0,0,0));
-	HFONT titleFont = CreateFont(18,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,
-							   DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-							   DEFAULT_QUALITY,DEFAULT_PITCH | FF_DONTCARE,TEXT("Arial"));
-	HFONT oldFont = (HFONT)SelectObject(hdc,titleFont);
-
 	TextOut(hdc,sampleSpriteArea.left,sampleSpriteArea.top-20,L"Sample Sprites",14);
 
-	SelectObject(hdc,oldFont);
-	DeleteObject(titleFont);
-
-	// 스프라이트 타입 레이블 그리기
-	HFONT labelFont = CreateFont(14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
-							  DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-							  DEFAULT_QUALITY,DEFAULT_PITCH | FF_DONTCARE,TEXT("Arial"));
-	oldFont = (HFONT)SelectObject(hdc,labelFont);
-
-	// 스프라이트 크기 계산
+	// 스프라이트 표시 (pallet64x160.bmp의 스프라이트들)
 	int spriteWidth = sampleSpriteImage->GetFrameWidth();
 	int spriteHeight = sampleSpriteImage->GetFrameHeight();
 
-	// 카테고리별 Y 오프셋
-	int categoryPadding = 40;
-	int currentY = sampleSpriteArea.top;
+	// 모든 스프라이트 표시 (5x2 그리드)
+	for(int y = 0; y < 2; y++) {
+		for(int x = 0; x < 5; x++) {
+			int posX = sampleSpriteArea.left + x * spriteWidth;
+			int posY = sampleSpriteArea.top + y * spriteHeight;
 
-	// === 아이템 섹션 ===
-	TextOut(hdc,sampleSpriteArea.left,currentY,L"ITEMS:",6);
-	currentY += 20;
+			sampleSpriteImage->FrameRender(
+				hdc,
+				posX + spriteWidth/2,
+				posY + spriteHeight/2,
+				x,y,
+				false,true
+			);
 
-	// 아이템 종류 (4개)
-	const LPCWSTR itemLabels[] = {L"Key",L"Phone",L"Insight",L"Stun",L"Poo",
-		L"Sowha",L"Pipe",L"Drumtong",L"Trash"};
-	const int itemCount = 9;
+			// 선택된 스프라이트 표시
+			if(isSpriteSelected && selectedSprite.x == x && selectedSprite.y == y) {
+				HPEN selectionPen = CreatePen(PS_SOLID,3,RGB(255,50,50));
+				HPEN oldSelPen = (HPEN)SelectObject(hdc,selectionPen);
+				SelectObject(hdc,GetStockObject(NULL_BRUSH));
 
-	// 한 행에 표시할 아이템 수
-	const int itemsPerRow = 2;
+				Rectangle(hdc,
+						posX,
+						posY,
+						posX + spriteWidth,
+						posY + spriteHeight
+				);
 
-	for(int i = 0; i < itemCount; i++) {
-		int row = i / itemsPerRow;
-		int col = i % itemsPerRow;
+				SelectObject(hdc,oldSelPen);
+				DeleteObject(selectionPen);
+			}
 
-		int posX = sampleSpriteArea.left + col * (spriteWidth + 20) + spriteWidth/2;
-		int posY = currentY + row * (spriteHeight + 30) + spriteHeight/2;
+			// 스프라이트 ID 표시
+			WCHAR idText[8];
+			int id;
 
-		// 아이템 스프라이트 그리기 (타일시트의 첫 번째 행 사용)
-		sampleSpriteImage->FrameRender(
-			hdc,
-			posX,
-			posY,
-			i,0, // x, y는 타일시트 좌표
-			false,true
-		);
+			// ID 매핑 (pallet64x160.bmp 배열)
+			if(y == 0 && x < 4) {
+				id = x + 1; // 첫 번째 행: 1, 2, 3, 4
+			} else if(y == 0 && x == 4) {
+				id = 5; // 첫 번째 행 마지막: 5
+			} else if(y == 1 && x == 0) {
+				id = 6; // 두 번째 행 첫 번째: 6
+			} else if(y == 1 && x == 1) {
+				id = 7; // 두 번째 행 두 번째: 7
+			} else if(y == 1 && x == 2) {
+				id = 8; // 두 번째 행 세 번째: 8 (Pile)
+			} else if(y == 1 && x == 3) {
+				id = 9; // 두 번째 행 네 번째: 9 (Elevator)
+			} else {
+				id = 12; // 두 번째 행 마지막: 12 (Final Elevator)
+			}
 
-		// 레이블 그리기
-		SetTextColor(hdc,RGB(0,0,0));
-		TextOut(hdc,
-			  posX - (wcslen(itemLabels[i]) * 4), // 텍스트 길이에 따라 중앙 정렬
-			  posY + spriteHeight/2 + 5,
-			  itemLabels[i],
-			  wcslen(itemLabels[i]));
-
-		// 선택된 스프라이트 표시
-		if(isSpriteSelected && selectedSpriteType == SpriteType::KEY &&
-		   selectedSprite.x == i && selectedSprite.y == 0) {
-			HPEN selectionPen = CreatePen(PS_SOLID,3,RGB(255,50,50));
-			HPEN oldSelPen = (HPEN)SelectObject(hdc,selectionPen);
-			SelectObject(hdc,GetStockObject(NULL_BRUSH));
-
-			Rectangle(hdc,
-					posX - spriteWidth/2 - 2,
-					posY - spriteHeight/2 - 2,
-					posX + spriteWidth/2 + 2,
-					posY + spriteHeight/2 + 2);
-
-			SelectObject(hdc,oldSelPen);
-			DeleteObject(selectionPen);
-		}
-	}
-
-	// 다음 섹션 위치 계산
-	currentY += (((itemCount + itemsPerRow - 1) / itemsPerRow) * (spriteHeight + 30)) + categoryPadding;
-
-	// === 몬스터 섹션 ===
-	TextOut(hdc,sampleSpriteArea.left,currentY,L"MONSTERS:",9);
-	currentY += 20;
-
-	// 몬스터 (1개)
-	const LPCWSTR monsterLabels[] = {L"Tentacle"};
-	const int monsterCount = 1;
-
-	for(int i = 0; i < monsterCount; i++) {
-		int posX = sampleSpriteArea.left + i * (spriteWidth + 20) + spriteWidth/2;
-		int posY = currentY + spriteHeight/2;
-
-		// 몬스터 스프라이트 그리기 (타일시트의 두 번째 행 사용)
-		sampleSpriteImage->FrameRender(
-			hdc,
-			posX,
-			posY,
-			i,1, // x, y는 타일시트 좌표
-			false,true
-		);
-
-		// 레이블 그리기
-		SetTextColor(hdc,RGB(0,0,0));
-		TextOut(hdc,
-			  posX - (wcslen(monsterLabels[i]) * 4),
-			  posY + spriteHeight/2 + 5,
-			  monsterLabels[i],
-			  wcslen(monsterLabels[i]));
-
-		// 선택된 스프라이트 표시
-		if(isSpriteSelected && selectedSpriteType == SpriteType::MONSTER &&
-		   selectedSprite.x == i && selectedSprite.y == 1) {
-			HPEN selectionPen = CreatePen(PS_SOLID,3,RGB(255,50,50));
-			HPEN oldSelPen = (HPEN)SelectObject(hdc,selectionPen);
-			SelectObject(hdc,GetStockObject(NULL_BRUSH));
-
-			Rectangle(hdc,
-					posX - spriteWidth/2 - 2,
-					posY - spriteHeight/2 - 2,
-					posX + spriteWidth/2 + 2,
-					posY + spriteHeight/2 + 2);
-
-			SelectObject(hdc,oldSelPen);
-			DeleteObject(selectionPen);
-		}
-	}
-
-	// 다음 섹션 위치 계산
-	currentY += spriteHeight + 40;
-
-	// === 장애물 섹션 ===
-	TextOut(hdc,sampleSpriteArea.left,currentY,L"OBSTACLES:",10);
-	currentY += 20;
-
-	// 장애물 종류 (6개 + 엘레베이터 1개)
-	const LPCWSTR obstacleLabels[] = {L"Elevator",L"Pile",L"Trash",L"Final Elevator"};
-	const int obstacleCount = 4;
-
-	// 한 행에 표시할 장애물 수
-	const int obstaclesPerRow = 2;
-
-	for(int i = 0; i < obstacleCount; i++) {
-		int row = i / obstaclesPerRow;
-		int col = i % obstaclesPerRow;
-
-		int posX = sampleSpriteArea.left + col * (spriteWidth + 20) + spriteWidth/2;
-		int posY = currentY + row * (spriteHeight + 30) + spriteHeight/2;
-
-		// 장애물 스프라이트 그리기 (타일시트의 세 번째 행 사용)
-		int spriteY = (i < 4) ? 2 : 3; // 엘레베이터는 별도 행에
-		sampleSpriteImage->FrameRender(
-			hdc,
-			posX,
-			posY,
-			i % 6,spriteY, // x, y는 타일시트 좌표
-			false,true
-		);
-
-		// 레이블 그리기
-		SetTextColor(hdc,RGB(0,0,0));
-		TextOut(hdc,
-			  posX - (wcslen(obstacleLabels[i]) * 4),
-			  posY + spriteHeight/2 + 5,
-			  obstacleLabels[i],
-			  wcslen(obstacleLabels[i]));
-
-		// 선택된 스프라이트 표시
-		if(isSpriteSelected && selectedSpriteType == SpriteType::OBSTACLE &&
-		   selectedSprite.x == i % 6 && selectedSprite.y == spriteY) {
-			HPEN selectionPen = CreatePen(PS_SOLID,3,RGB(255,50,50));
-			HPEN oldSelPen = (HPEN)SelectObject(hdc,selectionPen);
-			SelectObject(hdc,GetStockObject(NULL_BRUSH));
-
-			Rectangle(hdc,
-					posX - spriteWidth/2 - 2,
-					posY - spriteHeight/2 - 2,
-					posX + spriteWidth/2 + 2,
-					posY + spriteHeight/2 + 2);
-
-			SelectObject(hdc,oldSelPen);
-			DeleteObject(selectionPen);
+			swprintf_s(idText,L"%d",id);
+			TextOut(hdc,posX + 5,posY + 5,idText,wcslen(idText));
 		}
 	}
 
@@ -611,8 +492,6 @@ void MapEditor::RenderSampleSprites(HDC hdc)
 	DeleteObject(samplePen);
 	SelectObject(hdc,oldBrush);
 	DeleteObject(sampleBgBrush);
-	SelectObject(hdc,oldFont);
-	DeleteObject(labelFont);
 }
 
 void MapEditor::RenderSprites(HDC hdc)
@@ -969,66 +848,46 @@ void MapEditor::HandleInput()
 			selectedTile.y = min(relY / TILE_SIZE,SAMPLE_TILE_Y - 1);
 			isSpriteSelected = false;
 		}
-	} else if(mouseInSpriteArea && km->IsOnceKeyDown(VK_LBUTTON))
-	{
-		// 스프라이트 선택 처리
-		int spriteWidth = sampleSpriteImage->GetFrameWidth();
-		int spriteHeight = sampleSpriteImage->GetFrameHeight();
+	}else if(mouseInSpriteArea && km->IsOnceKeyDown(VK_LBUTTON))
+{
+    int relX = mousePos.x - sampleSpriteArea.left;
+    int relY = mousePos.y - sampleSpriteArea.top;
+    
+    int spriteWidth = sampleSpriteImage->GetFrameWidth();
+    int spriteHeight = sampleSpriteImage->GetFrameHeight();
+    
+    int x = relX / spriteWidth;
+    int y = relY / spriteHeight;
+    
+    if(x >= 0 && x < 5 && y >= 0 && y < 2) {
+        selectedSprite.x = x;
+        selectedSprite.y = y;
+        isSpriteSelected = true;
+        
+    
+        //  Elevator(9), Phone(1), Insight(2), Stun(3), Poo(4)
+        //  Sowha(5), Pipe(6), Drumtong(7), Trash(11), Final Elevator(12)
+        const int idMap[2][5] = {
+            {9, 1, 2, 3, 4},    
+            {5, 6, 7, 11, 12}
+        };
+        
+        selectedSpriteID = idMap[y][x]; // 선택한 스프라이트의 ID 저장
+        
+        // 타입 설정 (ID에 따라)
+        if(selectedSpriteID == 8 || selectedSpriteID == 9 || selectedSpriteID == 12) {
+            selectedSpriteType = SpriteType::OBSTACLE;
+            ChangeEditMode(EditMode::OBSTACLE);
+        }
+		else 
+		{
+            selectedSpriteType = SpriteType::ITEM;
+            ChangeEditMode(EditMode::ITEM);
+        }
+    }
+}
 
-		// 현재 마우스 Y 위치에 따라 섹션 결정
-		int sectionY = mousePos.y - sampleSpriteArea.top;
-		int itemSectionHeight = 120; // 아이템 섹션 높이 (예상치)
-		int monsterSectionHeight = 90; // 몬스터 섹션 높이 (예상치)
-
-		if(sectionY < itemSectionHeight) {
-			// 아이템 섹션
-			const int itemsPerRow = 2;
-			int relX = (mousePos.x - sampleSpriteArea.left) / (spriteWidth + 20);
-			int relY = (sectionY - 20) / (spriteHeight + 30);
-			int itemIndex = relY * itemsPerRow + relX;
-
-			if(itemIndex >= 0 && itemIndex < 4) { // 아이템은 4개
-				selectedSprite.x = itemIndex;
-				selectedSprite.y = 0;
-				selectedSpriteType = SpriteType::KEY;
-				isSpriteSelected = true;
-				ChangeEditMode(EditMode::ITEM);
-			}
-		} else if(sectionY < itemSectionHeight + monsterSectionHeight) {
-			// 몬스터 섹션
-			int relX = (mousePos.x - sampleSpriteArea.left) / (spriteWidth + 20);
-
-			if(relX >= 0 && relX < 1) { // 몬스터는 1개
-				selectedSprite.x = relX;
-				selectedSprite.y = 1;
-				selectedSpriteType = SpriteType::MONSTER;
-				isSpriteSelected = true;
-				ChangeEditMode(EditMode::MONSTER);
-			}
-		} else {
-			// 장애물 섹션
-			const int obstaclesPerRow = 3;
-			int sectionsTopOffset = itemSectionHeight + monsterSectionHeight + 40; // 앞 섹션 높이 + 장애물 제목 공간
-			int relY = (sectionY - sectionsTopOffset) / (spriteHeight + 30);
-			int relX = (mousePos.x - sampleSpriteArea.left) / (spriteWidth + 20);
-			int obstacleIndex = relY * obstaclesPerRow + relX;
-
-			if(obstacleIndex >= 0 && obstacleIndex < 7) { // 장애물 6개 + 엘레베이터 1개
-				if(obstacleIndex < 6) {
-					// 일반 장애물
-					selectedSprite.x = obstacleIndex;
-					selectedSprite.y = 2;
-				} else {
-					// 엘레베이터
-					selectedSprite.x = 0;
-					selectedSprite.y = 3;
-				}
-				selectedSpriteType = SpriteType::OBSTACLE;
-				isSpriteSelected = true;
-				ChangeEditMode(EditMode::OBSTACLE);
-			}
-		}
-	} else if(mouseInMapArea)
+	else if(mouseInMapArea)
 	{
 		// 맵 편집
 		POINT tilePos = ScreenToTile(mousePos);
@@ -1144,16 +1003,13 @@ void MapEditor::PlaceObstacle(int x,int y)
 		}
 	}
 
-	Texture* obstacleTexture = TextureManager::GetInstance()->GetTexture(TEXT("Image/jewel.bmp"));
-	if(obstacleTexture) {
-		Obstacle newObstacle;
-		newObstacle.pos = {x,y};
-		newObstacle.texture = obstacleTexture;
-		newObstacle.dir = selectedObstacleDir;
-		newObstacle.block = TRUE;
+	Obstacle newObstacle;
+	newObstacle.pos = {x,y};
+	newObstacle.id = selectedSpriteID; 
+	newObstacle.dir = selectedObstacleDir;
+	newObstacle.block = TRUE;
 
-		editorObstacles.push_back(newObstacle);
-	}
+	editorObstacles.push_back(newObstacle);
 }
 
 void MapEditor::PlaceMonster(int x,int y)
@@ -1201,11 +1057,10 @@ void MapEditor::PlaceItem(int x,int y)
 		return;
 
 	FPOINT spritePos = CalculateSpritePosition(x,y);
-	if(spritePos.x < 0)	return;
+	if(spritePos.x < 0) return;
 
 	// 근처에 다른 스프라이트가 있는지 확인
-	const float MIN_DISTANCE = 0.2f; // 최소 거리 (타일 크기의 20%)
-
+	const float MIN_DISTANCE = 0.2f;
 	for(const auto& sprite : editorSprites) {
 		float dx = sprite.pos.x - spritePos.x;
 		float dy = sprite.pos.y - spritePos.y;
@@ -1216,18 +1071,13 @@ void MapEditor::PlaceItem(int x,int y)
 		}
 	}
 
-	Texture* keyTexture = TextureManager::GetInstance()->GetTexture(TEXT("Image/phone.bmp"));
-	if(!keyTexture) {
-		MessageBox(g_hWnd,TEXT("Item texture not found!"),TEXT("Error"),MB_OK);
-		return;
-	}
 
-	//sprite.id 로 정보저장 (아이템,몬스터,장애물) 
 	Sprite newSprite;
 	newSprite.pos = spritePos;
-	newSprite.id = 0;
-	newSprite.type = SpriteType::KEY;
+	newSprite.id = selectedSpriteID; 
+	newSprite.type = SpriteType::ITEM;
 
+	// 리스트에 추가
 	editorSprites.push_back(newSprite);
 }
 
@@ -1271,11 +1121,10 @@ void MapEditor::RemoveObject(int x,int y)
 
 	case EditMode::MONSTER:
 	case EditMode::ITEM:
-	// 마우스 위치와 가장 가까운 스프라이트 찾기 (해당 타일 내에서)
 	{
 		// 마우스의 정확한 위치를 사용하여 타일 내에서의 상대적 위치 계산
 		POINT tileScreenPos = TileToScreen({x,y});
-		if(tileScreenPos.x < 0 || tileScreenPos.y < 0) return; // 예외 처리
+		if(tileScreenPos.x < 0 || tileScreenPos.y < 0) return;
 
 		int tileWidth = (mapArea.right - mapArea.left) / (mapWidth / zoomLevel);
 		int tileHeight = (mapArea.bottom - mapArea.top) / (mapHeight / zoomLevel);
@@ -1314,7 +1163,7 @@ void MapEditor::RemoveObject(int x,int y)
 		}
 
 		// 일정 거리 내에 있는 경우에만 삭제
-		const float DELETE_RADIUS = 0.3f; // 삭제 범위 (타일 크기의 30%)
+		const float DELETE_RADIUS = 0.3f;
 		if(minDistance <= DELETE_RADIUS && closestSprite != editorSprites.end()) {
 			editorSprites.erase(closestSprite);
 		}
@@ -1726,11 +1575,11 @@ void MapEditor::ClearMap()
 			if(x == 0 || y == 0 || x == mapWidth - 1 || y == mapHeight - 1)
 			{
 				tiles[index].roomType = RoomType::WALL;
-				tiles[index].tilePos = 4; // 벽 타일 인덱스
+				tiles[index].tilePos = 4; 
 			} else
 			{
 				tiles[index].roomType = RoomType::FLOOR;
-				tiles[index].tilePos = 10; // 바닥 타일 인덱스
+				tiles[index].tilePos = 10; 
 			}
 		}
 	}
@@ -1743,11 +1592,8 @@ void MapEditor::ClearMap()
 		tiles[startIndex].roomType = RoomType::START;
 	}
 
-	// 스프라이트와 장애물 초기화
 	editorSprites.clear();
 	editorObstacles.clear();
-
-	// 뷰포트 초기화
 	viewportOffset = {0.0f,0.0f};
 	zoomLevel = 1.0f;
 
@@ -1757,7 +1603,6 @@ void MapEditor::ClearMap()
 void MapEditor::ConvertToDataManager()
 {
 	// DataManager에 데이터 설정
-
 	DataManager::GetInstance()->ClearAllData();
 	DataManager::GetInstance()->SetMapData(tiles,mapWidth,mapHeight);
 	DataManager::GetInstance()->SetTextureInfo(L"Image/tiles.bmp",128,SAMPLE_TILE_X,SAMPLE_TILE_Y);
@@ -1769,7 +1614,6 @@ void MapEditor::ConvertToDataManager()
 		{
 			ItemData item;
 			item.pos = sprite.pos;
-			item.aniInfo = sprite.aniInfo;
 			item.id = sprite.id;
 			DataManager::GetInstance()->AddItemData(item);
 		} else if(sprite.type == SpriteType::MONSTER)
@@ -1786,27 +1630,22 @@ void MapEditor::ConvertToDataManager()
 		ObstacleData obsData;
 		obsData.pos = obstacle.pos;
 		obsData.dir = obstacle.dir;
+		obsData.id = obstacle.id;
 		DataManager::GetInstance()->AddObstacleData(obsData);
 	}
-
 }
 
 void MapEditor::ConvertFromDataManager()
 {
-	// 맵 데이터 로드
 	MapData mapData;
-	if(DataManager::GetInstance()->GetMapData(mapData))
-	{
-		// 타일 데이터 복원
+	if(DataManager::GetInstance()->GetMapData(mapData)) {
 		mapWidth = mapData.width;
 		mapHeight = mapData.height;
 		tiles = mapData.tiles;
 	}
 
-	// 시작 위치 복원
 	startPosition = DataManager::GetInstance()->GetStartPosition();
 
-	// 데이터 초기화
 	editorSprites.clear();
 	editorObstacles.clear();
 
@@ -1815,47 +1654,32 @@ void MapEditor::ConvertFromDataManager()
 		Sprite sprite;
 		sprite.pos = item.pos;
 		sprite.type = SpriteType::KEY;
+		sprite.id = item.id;
 		sprite.distance = 0.0f;
 
-		// 텍스처와 애니메이션 정보 설정
-		sprite.texture = TextureManager::GetInstance()->GetTexture(TEXT("Image/soul.bmp"));
-		sprite.aniInfo = item.aniInfo;
-
-		// 스프라이트 목록에 추가
 		editorSprites.push_back(sprite);
 	}
 
-	// 몬스터 복원
 	const auto& monsters = DataManager::GetInstance()->GetMonsters();
 	for(const auto& monster : monsters) {
 		Sprite sprite;
 		sprite.pos = monster.pos;
 		sprite.type = SpriteType::MONSTER;
+		sprite.id = monster.id;
 		sprite.distance = 0.0f;
-		sprite.id = 10;
-		// 텍스처와 애니메이션 정보 설정
-		sprite.texture = TextureManager::GetInstance()->GetTexture(TEXT("Image/Ballman.bmp"));
-		sprite.aniInfo = monster.aniInfo;
 
-		// 스프라이트 목록에 추가
 		editorSprites.push_back(sprite);
 	}
 
-	// 장애물 복원
 	const auto& obstacles = DataManager::GetInstance()->GetObstacles();
 	for(const auto& obstacleData : obstacles) {
 		Obstacle obstacle;
 		obstacle.pos = obstacleData.pos;
 		obstacle.dir = obstacleData.dir;
+		obstacle.id = obstacleData.id;
 		obstacle.block = TRUE;
 		obstacle.distance = 0.0f;
 
-		// 텍스처와 애니메이션 정보 설정
-		// 장애물 종류에 따라 다른 텍스처 적용 가능
-		obstacle.texture = TextureManager::GetInstance()->GetTexture(TEXT("Image/pile.bmp"));
-		obstacle.aniInfo = {0.0f,0.0f,{128,128},{8,1},{0,0}};
-
-		// 장애물 목록에 추가
 		editorObstacles.push_back(obstacle);
 	}
 
@@ -1869,7 +1693,4 @@ void MapEditor::ConvertFromDataManager()
 	currentMode = EditMode::TILE;
 	selectedTileType = RoomType::FLOOR;
 	selectedObstacleDir = Direction::EAST;
-
-	// 최종적으로 맵이 로드되었음을 콘솔에 출력 (디버깅용, 필요시 제거)
-	OutputDebugString(L"Map data loaded from DataManager successfully.\n");
 }

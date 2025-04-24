@@ -105,7 +105,7 @@ typedef struct tagMapData
 	DWORD textureTileColumnSize;
 } MapData;
 
-// ����� ������
+
 typedef struct tagFileHeader
 {
 	char signature[4];    
@@ -117,12 +117,10 @@ typedef struct tagFileHeader
 	int monsterCount;    
 	int obstacleCount;
 	FPOINT startPos;        
-
-	// �ؽ�ó ����
-	wchar_t texturePath[MAX_PATH];  // �ؽ�ó ���
-	DWORD textureTileSize;          // Ÿ�� ũ��
-	DWORD textureTileRowSize;       // ���� Ÿ�� ��
-	DWORD textureTileColumnSize;    // ���� Ÿ�� ��
+	wchar_t texturePath[MAX_PATH];  
+	DWORD textureTileSize;         
+	DWORD textureTileRowSize;       
+	DWORD textureTileColumnSize;   
 
 	tagFileHeader()
 	{
@@ -146,15 +144,15 @@ typedef struct tagFileHeader
 typedef struct tagItemSaveData
 {
 	DWORD id;
-	FPOINT pos;             // ��ġ
-	AnimationInfo aniInfo;  // �ִϸ��̼� ����        // ������ Ÿ�� - 0: Key
+	FPOINT pos;             
+	AnimationInfo aniInfo; 
 }ItemData;
 
 typedef struct tagMonsterSaveData
 {
 	DWORD id;
-	FPOINT pos;             // ��ġ
-	AnimationInfo aniInfo;  // �ִϸ��̼� ����      // ���� Ÿ�� - 0: Tentacle
+	FPOINT pos;             
+	AnimationInfo aniInfo; 
 }MonsterData;
 
 typedef struct tagObstacleSaveData

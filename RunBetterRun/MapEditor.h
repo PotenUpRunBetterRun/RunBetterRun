@@ -32,13 +32,15 @@ private:
 	FPOINT startPosition;
 	vector<Sprite> editorSprites;
 	vector<Obstacle> editorObstacles;
-
+	DWORD selectedSpriteID;
 	// UI 요소
 	RECT mapArea;
 	RECT sampleArea;
 	RECT sampleSpriteArea;
 	Image* sampleTileImage;
 	Image* sampleSpriteImage;
+	Image* keySpriteImage;      
+	Image* monsterSpriteImage;  
 
 	// 확대/축소 및 스크롤
 	FPOINT viewportOffset;
@@ -93,7 +95,6 @@ private:
 	void RenderSprites(HDC hdc);
 	void RenderObstacles(HDC hdc);
 	void RenderDragArea(HDC hdc);
-	void RenderRightDragArea(HDC hdc);
 	void RenderUI(HDC hdc);
 
 public:
@@ -111,6 +112,7 @@ public:
 	void Zoom(float delta);
 	void Scroll(float deltaX,float deltaY);
 	void ApplyTilesToDragArea();
+	void RenderRightDragArea(HDC hdc);
 	void ChangeObstacleDirection(Direction dir);
 
 	// 마우스 휠 이벤트 처리
