@@ -53,17 +53,18 @@ void Tentacle::Catch(void)
 	// 플레이어의 생명력 감소
 	Player* player = Player::GetInstance();
 
+	this->sprite.aniInfo.currentFrame.y = 0;
+
 	// 회전 애니메이션 시작
 	MainGameScene* mainScene = dynamic_cast<MainGameScene*>(SceneManager::GetInstance()->currentScene);
 	if(mainScene) {
 		mainScene->StartMonsterCatchAnimation(sprite.pos);
 	} 
-
 }
 
 HRESULT Tentacle::Init(FPOINT pos)
 {
-	sprite.id = 10;
+	sprite.id = 100;
 	sprite.texture = TextureManager::GetInstance()->GetTexture(TEXT("Image/Ballman.bmp"));
 	if(!sprite.texture)
 		return E_FAIL;

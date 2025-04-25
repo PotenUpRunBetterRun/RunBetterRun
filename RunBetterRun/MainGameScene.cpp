@@ -28,32 +28,70 @@ HRESULT MainGameScene::Init()
 		return E_FAIL;
 	}
 
-	MapManager::GetInstance()->Init(L"Map/SavedMap.dat");
+	MapManager::GetInstance()->Init(filePath);
 	SpriteManager::GetInstance()->Init();
 	Player::GetInstance()->Init([&](float shakePower, float time, bool isStepShake) { ShakeScreen(shakePower, time, isStepShake); });
 	MonsterManager::GetInstance()->Init();
 	ItemManager::GetInstance()->Init();
 	ObstacleManager::GetInstance()->Init();
 
+	BOOL phone = FALSE;
 	const auto& items = DataManager::GetInstance()->GetItems();
 	for(const auto& itemData : items)
 	{
-		Key* key = new Key(itemData.pos);
-		key->SetAnimInfo(itemData.aniInfo);
-		ItemManager::GetInstance()->PutItem(key);
+		switch(itemData.id)
+		{
+		case(0):
+		ItemManager::GetInstance()->PutItem(new Key(itemData.pos));
+		break;
+		case(1):
+		ItemManager::GetInstance()->PutItem(new Phone(itemData.pos));
+		phone = TRUE;
+		break;
+		case(2):
+		ItemManager::GetInstance()->PutItem(new Insight(itemData.pos));
+		break;
+		case(3):
+		ItemManager::GetInstance()->PutItem(new Stun(itemData.pos));
+		break;
+		case(4): case(5): case(6): case(7): case(8):
+		ItemManager::GetInstance()->PutItem(new Display(itemData.pos,itemData.id));
+		break;
+		}
+		
 	}
 	const auto& monsters = DataManager::GetInstance()->GetMonsters();
 	for(const auto& monsterData : monsters)
 	{
-		Tentacle* tentacle = new Tentacle(monsterData.pos);
-		tentacle->SetAnimInfo(monsterData.aniInfo);
-		MonsterManager::GetInstance()->PutMonster(tentacle);
+		switch(monsterData.id)
+		{
+		case(100):
+			MonsterManager::GetInstance()->PutMonster(new Tentacle(monsterData.pos));
+			break;
+		default:
+			break;
+		}
 	}
 	const auto& obstacles = DataManager::GetInstance()->GetObstacles();
 	for(const auto& obstacleData : obstacles)
+	{ 
+		switch(obstacleData.id)
+		{
+		case(1001):
+			ObstacleManager::GetInstance()->PutObstacle(new Pile(obstacleData.pos,obstacleData.dir));
+			break;
+		case(1000): case(1002):
+			ObstacleManager::GetInstance()->PutObstacle(new Elevator(obstacleData.pos,obstacleData.dir,obstacleData.id));
+			break;
+		default:
+			break;
+		}
+	}
+	if(!phone)
 	{
-		Pile* pile = new Pile(obstacleData.pos,obstacleData.dir);
-		ObstacleManager::GetInstance()->PutObstacle(pile);
+		PhoneUI* uiUnit = new PhoneUI();
+		uiUnit->Init(UIType::PLAYING,FPOINT{100,WINSIZE_Y - 500},FPOINT{300,400},0);
+		UIManager::GetInstance()->AddUIUnit("PhoneUI",uiUnit);
 	}
 
 	UIManager::GetInstance()->Init();
@@ -84,14 +122,9 @@ HRESULT MainGameScene::Init()
 	ObstacleManager::GetInstance()->PutObstacle(new Pile({21,20},Direction::NORTH));
 	ObstacleManager::GetInstance()->PutObstacle(new Pile({21,18},Direction::SOUTH));*/
 
-	ItemManager::GetInstance()->PutItem(new Phone({26.5,26.5}));
-
+	//ItemManager::GetInstance()->PutItem(new Phone({26.5,26.5}));
+	
 	return S_OK;
-}
-
-HRESULT MainGameScene::Init(LPCWCH)
-{
-	return E_NOTIMPL;
 }
 
 void MainGameScene::Release()
@@ -127,12 +160,11 @@ void MainGameScene::Update()
 	switch(status)
 	{
 	case MainGameScene::SceneStatus::IN_GAME:
-		if(ShowCursor(FALSE) >= 0)
-			ShowCursor(FALSE);
+		while(ShowCursor(FALSE) >= 0);
 
 		if(KeyManager::GetInstance()->IsOnceKeyDown(VK_ESCAPE))
 		{
-			ShowCursor(TRUE);
+			while(ShowCursor(TRUE) < 0);
 			MonsterManager::GetInstance()->StopSound();
 			status = SceneStatus::PAUSE;
 			break;
@@ -153,8 +185,7 @@ void MainGameScene::Update()
 		break;
 
 	case MainGameScene::SceneStatus::PAUSE:
-		if(ShowCursor(TRUE) < 0)
-			ShowCursor(TRUE);
+		while(ShowCursor(TRUE) < 0);
 
 		CheckButtonHover();
 
@@ -172,7 +203,7 @@ void MainGameScene::Update()
 
 		if(KeyManager::GetInstance()->IsOnceKeyDown(VK_ESCAPE))
 		{
-			ShowCursor(FALSE);
+			while(ShowCursor(FALSE) >= 0);
 			status = SceneStatus::IN_GAME;
 		}
 
