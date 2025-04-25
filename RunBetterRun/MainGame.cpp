@@ -34,12 +34,12 @@ HRESULT MainGame::Init()
 	}
 
 	SoundManager::GetInstance()->PlayMusic("BGM",true,0.8f);
+
 	if(!AddFontResourceFromFile(L"Fonts/ChainsawCarnage.ttf"))
 	{
 		MessageBox(g_hWnd,TEXT("Font Load Failed"),TEXT("Error"),MB_OK);
 		return E_FAIL;
 	}
-
 
 	VideoManager::Init();
 	DataManager::GetInstance()->Init();	

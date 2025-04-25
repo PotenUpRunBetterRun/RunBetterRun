@@ -22,6 +22,17 @@ public:
 	FPOINT GetCameraVerDir() { return cameraVerDir; }
 	FPOINT GetPlane() { return plane; }
 
+	void SetCameraDirection(FPOINT newDirection) {
+		cameraVerDir = newDirection;
+
+		// 수직 방향도 업데이트
+		cameraHorDir.x = cameraVerDir.y;
+		cameraHorDir.y = -cameraVerDir.x;
+
+		// FOV 업데이트
+		UpdateFOV();
+	}
+
 private:
 	FPOINT cameraPos;                         // 카메라 위치
 	FPOINT cameraVerDir;                      // 카메라 방향

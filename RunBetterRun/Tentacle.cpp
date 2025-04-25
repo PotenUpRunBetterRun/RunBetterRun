@@ -49,6 +49,16 @@ void Tentacle::Action(void)
 void Tentacle::Catch(void)
 {
 	SceneManager::GetInstance()->ChangeScene("JumpscareScene");
+
+	// 플레이어의 생명력 감소
+	Player* player = Player::GetInstance();
+
+	// 회전 애니메이션 시작
+	MainGameScene* mainScene = dynamic_cast<MainGameScene*>(SceneManager::GetInstance()->currentScene);
+	if(mainScene) {
+		mainScene->StartMonsterCatchAnimation(sprite.pos);
+	} 
+
 }
 
 HRESULT Tentacle::Init(FPOINT pos)
