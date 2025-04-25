@@ -84,6 +84,8 @@ HRESULT MainGameScene::Init()
 	ObstacleManager::GetInstance()->PutObstacle(new Pile({21,20},Direction::NORTH));
 	ObstacleManager::GetInstance()->PutObstacle(new Pile({21,18},Direction::SOUTH));*/
 
+	ItemManager::GetInstance()->PutItem(new Phone({26.5,26.5}));
+
 	return S_OK;
 }
 
