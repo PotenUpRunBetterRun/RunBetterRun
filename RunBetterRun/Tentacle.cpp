@@ -48,7 +48,7 @@ void Tentacle::Action(void)
 
 void Tentacle::Catch(void)
 {
-	SceneManager::GetInstance()->ChangeScene("JumpscareScene");
+	//SceneManager::GetInstance()->ChangeScene("JumpscareScene");
 
 	// 플레이어의 생명력 감소
 	Player* player = Player::GetInstance();
