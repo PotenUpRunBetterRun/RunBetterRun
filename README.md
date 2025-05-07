@@ -9,9 +9,7 @@
 
 ### 플레이
 <a href="https://kofeeel.itch.io/transmundus">
-  <div style="background-color: #fa5c5c; display: inline-block; padding: 8px; border-radius: 4px;">
-    <img src="https://static.itch.io/images/logo-white-new.svg" alt="itch.io" width="100"/>
-  </div>
+  <img src="https://static-00.iconduck.com/assets.00/itch-io-icon-512x512-wwio9bi8.png" alt="itch.io" width="100"/>
 </a>
 
 ### 사용 기술
