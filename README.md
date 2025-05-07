@@ -5,7 +5,6 @@
 * [Dark Deception](https://store.steampowered.com/app/332950/Dark_Deception/)을 벤치마킹하여 제작하였습니다. 주인공은 미로와 같은 공간을 돌아다니며 추격해오는 몬스터들을 피해 아이템들을 모아 스테이지를 탈출해야 합니다.
 * 주로 [GitHub Project](https://github.com/orgs/PotenUpRunBetterRun/projects/1/views/2)를 통해 협업 하였습니다.
 * 개발기간은 2025.4.12 ~ 2025.4.25, 약 2주 소요되었습니다.
-
     
 
 ### 플레이
@@ -39,8 +38,19 @@ https://kofeeel.tistory.com/62
 [![타계시연1](http://img.youtube.com/vi/owF7KMpwQAQ/0.jpg)](https://youtu.be/owF7KMpwQAQ?t=0s)
 [![타계시연2](http://img.youtube.com/vi/YLMpeg3B13g/0.jpg)](https://youtu.be/YLMpeg3B13g?t=0s)<br>  
 
+### 레퍼런스 에디터
+  
+  <img src="RunBetterRun/Image/image (1).png">  
+
 ### 에디터 
-<img src=" ">  
+<img src="RunBetterRun/Image/image.png">
+
+#### 에디터 기능 
+* 오브젝트(엔티티) 타입 별로 모드를 구분해서 다른 타입의 오브젝트는 삭제할 수 없도록 함
+* 숏컷 기능: 저장(s), 로드(l), 다른 이름으로 저장(a), 맵 초기화(c), 드래그(우클릭 배치, 좌클릭 삭제), 확대/축소(마우스 휠), 스크롤(마우스 휠클릭)
+* 샘플영역에서 배치할 타일, 오브젝트를 볼 수 있음
+* 맵 저장시 가장자리는 항상 벽을 생성하게 함: Ray의 거리가 무한대가 되지 않고 충돌할 수 있게 예외처리
+* 플레이어 시작위치의 타일은 항상 바닥 타입으로 설정하게 함 : Ray의 거리가 0이 되지않게 예외처리 
 
 ### 스크린샷
 <img src="https://github.com/leebo155/RunBetterRun/blob/main/screenshots/1.jpg">
